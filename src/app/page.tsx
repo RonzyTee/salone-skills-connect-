@@ -1,103 +1,336 @@
-import Image from "next/image";
 
-export default function Home() {
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import {
+  FaArrowUp, FaCog, FaSearch, FaImages, FaTrophy, FaNewspaper, FaQuestionCircle,
+  FaBriefcase, FaChevronDown, FaTimesCircle, FaCheckCircle,
+  FaPaintBrush, FaCode, FaCamera, FaWrench, FaCut, FaBirthdayCake,
+  FaUserCheck, FaFolderOpen, FaAward, FaSearchLocation, FaFilter, FaHandshake
+} from 'react-icons/fa';
+
+// --- CONFIGURATION / CONSTANTS ---
+
+// FIX: Define a type for navigation links to prevent 'any[]' type error.
+interface NavLink {
+  name: string;
+  href: string;
+  icon?: React.ReactNode;
+}
+
+// Navigation links with corrected hrefs for Next.js routing
+const NAV_LINKS: NavLink[] = [
+];
+
+// Data for Featured Skills section
+const FEATURED_SKILLS = [
+    { name: 'Web Development', icon: <FaCode className="h-10 w-10 text-blue-400" />, color: 'blue' },
+    { name: 'Graphic Design', icon: <FaPaintBrush className="h-10 w-10 text-purple-400" />, color: 'purple' },
+    { name: 'Photography', icon: <FaCamera className="h-10 w-10 text-pink-400" />, color: 'pink' },
+    { name: 'Tailoring', icon: <FaCut className="h-10 w-10 text-green-400" />, color: 'green' },
+    { name: 'Baking', icon: <FaBirthdayCake className="h-10 w-10 text-red-400" />, color: 'red' },
+    { name: 'Mechanics', icon: <FaWrench className="h-10 w-10 text-gray-400" />, color: 'gray' },
+];
+
+// Statistics data for the hero section
+const STATS_DATA = [
+    { value: '200+', description: 'Skilled talents ready to be hired across various platforms.' },
+    { value: '50+', description: 'Managers & Clients actively registering and hiring.' },
+    { value: '100+', description: 'Active members using the platform to connect and grow daily.' },
+];
+
+// Step data for "How It Works" section
+const talentSteps = [
+    { icon: <FaUserCheck />, title: "Verify Your Identity", description: "Upload your National ID to confirm you're a real person (OIVP Tier 0)." },
+    { icon: <FaFolderOpen />, title: "Showcase Your Work", description: "Add projects to your portfolio—verify websites automatically or upload photo/video proof for vocational skills (OIVP Tier 1)." },
+    { icon: <FaAward />, title: "Get Endorsed by Clients", description: "Request testimonials from past clients to earn the 'Client Endorsed' badge—the ultimate trust signal (OIVP Tier 2)." },
+];
+
+const managerSteps = [
+    { icon: <FaSearchLocation />, title: "Find Proven Talent", description: "Search for any skill you need, from programming to painting." },
+    { icon: <FaFilter />, title: "Filter by Trust Level", description: "Use our OIVP filters to instantly find youth who are identity-verified, have proven work, or are endorsed by clients." },
+    { icon: <FaHandshake />, title: "Hire with Confidence", description: "Review verified portfolios and testimonials to make informed, risk-free hiring decisions." },
+];
+
+
+// --- IN-PAGE COMPONENTS ---
+
+const Header: React.FC<{ scrollToSection: (e: React.MouseEvent, id: string) => void }> = ({ scrollToSection }) => {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <header className={`fixed top-0 z-50 w-full transition-all duration-300 ${scrolled ? 'bg-gray-900/80 backdrop-blur-lg border-b border-gray-700/50' : 'bg-transparent'}`}>
+      <div className="container mx-auto flex h-20 items-center justify-between px-4 md:px-6">
+        <div className="flex items-center gap-8">
+          <Link href="/" className="flex items-center gap-2" aria-label="Home">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-blue-400">
+              <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+              <path d="M2 7L12 12" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+              <path d="M12 22V12" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+              <path d="M22 7L12 12" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+              <path d="M17 4.5L7 9.5" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+            </svg>
+            <span className="font-bold text-xl text-white">Salone Skills Connect</span>
+          </Link>
+          <nav className="hidden items-center gap-6 md:flex" aria-label="Main navigation">
+            {NAV_LINKS.map((link) => (
+              <Link key={link.name} href={link.href} onClick={(e) => link.href.startsWith('#') && scrollToSection(e, link.href)} className="flex items-center text-sm font-medium text-gray-300 hover:text-blue-400 transition-colors">
+                {link.icon}
+                {link.name}
+              </Link>
+            ))}
+          </nav>
         </div>
+        <div className="flex items-center gap-4">
+           <Link href="/signup" className="flex items-center text-sm font-medium text-gray-300 hover:text-blue-400 transition-colors">
+             <FaQuestionCircle className="mr-2" />
+             Support
+           </Link>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+const Hero: React.FC<{ scrollToSection: (id: string) => void }> = ({ scrollToSection }) => (
+    <section id="hero" className="relative w-full h-screen flex flex-col justify-center items-center text-center overflow-hidden">
+        <div className="absolute inset-0 bg-cover bg-center -z-20" style={{backgroundImage: "url('https://images.unsplash.com/photo-1534972195531-d756b9bfa9f2?q=80&w=2070&auto=format&fit=crop')"}}></div>
+        <div className="absolute inset-0 bg-gray-950/80 -z-10"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-950 -z-10"></div>
+
+        <div className="container mx-auto px-4 flex flex-col items-center z-10 -mt-16">
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-white leading-tight animate-fade-in-down">
+            <span className="text-blue-400">Connect</span> with Sierra Leone's
+            <br />
+            Finest <span className="text-green-400">Verified</span> Talent
+          </h1>
+          <p className="mt-6 text-lg md:text-xl text-gray-300 max-w-3xl animate-fade-in-up animation-delay-300">
+            The trusted marketplace for Sierra Leone's skilled youth—from code to carpentry. We verify, you hire with confidence.
+          </p>
+          <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:justify-center items-center animate-fade-in-up animation-delay-500">
+            <Link href="/signup" className="group relative inline-flex items-center justify-center px-8 py-3 text-lg font-bold text-white bg-blue-600 rounded-lg overflow-hidden transition-all duration-300 ease-in-out hover:bg-blue-700 w-64 h-14 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/20">
+                <FaSearch className="mr-3 h-5 w-5" /> I'm looking for Talent
+            </Link>
+            <Link href="/signup" className="group relative inline-flex items-center justify-center px-8 py-3 text-lg font-bold text-white bg-green-600 rounded-lg overflow-hidden transition-all duration-300 ease-in-out hover:bg-green-700 w-64 h-14 hover:-translate-y-1 hover:shadow-xl hover:shadow-green-500/20">
+                <FaBriefcase className="mr-3 h-5 w-5" /> I'm looking for Work
+            </Link>
+          </div>
+        </div>
+
+        <div className="absolute bottom-24 w-full animate-fade-in-up animation-delay-700">
+            <div className="container mx-auto px-4 md:px-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-white backdrop-blur-sm bg-white/5 rounded-lg p-6 max-w-4xl mx-auto">
+                    {STATS_DATA.map((stat) => (
+                        <div key={stat.value} className="flex flex-col items-center text-center md:flex-row md:text-left md:gap-4 md:items-start">
+                            <p className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-green-400">{stat.value}</p>
+                            <p className="text-sm text-gray-300 mt-1 md:mt-2 max-w-[200px]">{stat.description}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+        
+        <div className="absolute bottom-10 animate-bounce">
+          <button onClick={() => scrollToSection('problem')} aria-label="Scroll down">
+              <FaChevronDown className="h-8 w-8 text-white/30 hover:text-white transition-colors" />
+          </button>
+        </div>
+        <style>{`
+          @keyframes fade-in-down { 
+            0% { opacity: 0; transform: translateY(-20px) scale(0.95); filter: blur(3px); } 
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } 
+          }
+          @keyframes fade-in-up { 
+            0% { opacity: 0; transform: translateY(20px) scale(0.95); filter: blur(3px); } 
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } 
+          }
+          .animate-fade-in-down { animation: fade-in-down 0.8s cubic-bezier(0.215, 0.610, 0.355, 1.000) forwards; opacity: 0; }
+          .animate-fade-in-up { animation: fade-in-up 0.8s cubic-bezier(0.215, 0.610, 0.355, 1.000) forwards; opacity: 0; }
+          .animation-delay-300 { animation-delay: 0.3s; }
+          .animation-delay-500 { animation-delay: 0.5s; }
+          .animation-delay-700 { animation-delay: 0.7s; }
+        `}</style>
+    </section>
+);
+
+const ProblemSolution: React.FC = () => (
+    <section id="problem" className="py-24 bg-gray-950">
+        <div className="container mx-auto px-4 md:px-6 text-center">
+            <h2 className="text-sm font-bold uppercase tracking-widest text-blue-400">The Challenge</h2>
+            <p className="mt-3 text-4xl md:text-5xl font-extrabold tracking-tight text-white">Bridging the Trust Gap in Sierra Leone</p>
+            <p className="mt-6 max-w-3xl mx-auto text-lg text-gray-400">
+                High youth unemployment meets a critical trust gap. Employers struggle to verify skills, and talented youth lack a platform to showcase proven work. We fix this.
+            </p>
+            <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                <div className="bg-gray-900 p-8 rounded-xl border border-gray-800 transition-all duration-300 hover:border-red-500/50 hover:shadow-2xl hover:shadow-red-500/10">
+                    <div className="flex items-center gap-4">
+                        <FaTimesCircle className="h-8 w-8 text-red-400 flex-shrink-0" />
+                        <h3 className="text-2xl font-bold text-white">The Problem</h3>
+                    </div>
+                    <p className="mt-4 text-gray-400">Employers find it risky to validate skills from a CV alone. How do you know a "web developer" can code, or a "baker" is reliable? This uncertainty stifles opportunities.</p>
+                </div>
+                <div className="bg-gray-900 p-8 rounded-xl border border-gray-800 transition-all duration-300 hover:border-green-500/50 hover:shadow-2xl hover:shadow-green-500/10">
+                    <div className="flex items-center gap-4">
+                        <FaCheckCircle className="h-8 w-8 text-green-400 flex-shrink-0" />
+                        <h3 className="text-2xl font-bold text-white">Our Solution: The OIVP</h3>
+                    </div>
+                    <p className="mt-4 text-gray-400">Our <span className="font-bold text-green-300">Open Innovation Verification Protocol (OIVP)</span> is a 3-tier system that proves identity, verifies work, and secures endorsements, creating a marketplace built on trust.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+);
+
+const FeaturedSkills: React.FC = () => (
+    <section id="skills" className="py-24 bg-gray-950/70">
+        <div className="container mx-auto px-4 md:px-6 text-center">
+            <h2 className="text-sm font-bold uppercase tracking-widest text-blue-400">Limitless Potential</h2>
+            <p className="mt-3 text-4xl md:text-5xl font-extrabold tracking-tight text-white">Empowering a Spectrum of Skills</p>
+            <p className="mt-6 max-w-3xl mx-auto text-lg text-gray-400">
+                We empower all of Sierra Leone's skilled youth, from digital experts to vocational professionals. If you have a skill, you have a future here.
+            </p>
+            <div className="mt-16 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                {FEATURED_SKILLS.map((skill) => (
+                    <div key={skill.name} className={`group flex flex-col items-center justify-center gap-4 p-6 bg-gray-900/50 rounded-xl border border-gray-800 transition-all duration-300 hover:scale-105 hover:border-${skill.color}-500/50 hover:shadow-lg hover:shadow-${skill.color}-500/40 cursor-pointer`}>
+                        <div className="transform transition-transform duration-300 group-hover:-translate-y-1">
+                            {skill.icon}
+                        </div>
+                        <p className="font-semibold text-white text-center">{skill.name}</p>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </section>
+);
+
+// FIX: Define StepCard as a React.FC to correctly handle props like 'key', resolving the TypeScript error.
+const StepCard: React.FC<{ icon: React.ReactElement<any>, title: string, description: string, isLast: boolean, color: 'blue' | 'green' }> = ({ icon, title, description, isLast, color }) => (
+    <li className="relative flex items-start gap-6 pb-10">
+        {!isLast && <div className={`absolute left-5 top-5 h-full w-0.5 bg-gradient-to-b from-${color}-500/50 via-${color}-500/50 to-transparent`} />}
+        <div className={`flex-shrink-0 w-10 h-10 rounded-full bg-${color}-500/10 border border-${color}-500/30 text-${color}-400 flex items-center justify-center z-10`}>
+            {React.cloneElement(icon, { className: "w-5 h-5" })}
+        </div>
+        <div>
+            <h4 className="font-bold text-xl text-white">{title}</h4>
+            <p className="mt-1 text-gray-400">{description}</p>
+        </div>
+    </li>
+);
+
+const HowItWorks: React.FC = () => (
+    <section id="how-it-works" className="py-24 bg-gray-950">
+        <div className="container mx-auto px-4 md:px-6">
+            <div className="text-center">
+                <h2 className="text-sm font-bold uppercase tracking-widest text-blue-400">Simple & Powerful</h2>
+                <p className="mt-3 text-4xl md:text-5xl font-extrabold tracking-tight text-white">A Clear Path to Opportunity</p>
+                <p className="mt-6 max-w-3xl mx-auto text-lg text-gray-400">
+                    A simple process to build trust and connect talent with opportunity, whether you're looking for work or searching for the perfect candidate.
+                </p>
+            </div>
+            <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-16">
+                <div>
+                    <h3 className="text-3xl font-bold mb-8 text-center text-blue-300">For Talent</h3>
+                    <ul className="space-y-4">
+                       {talentSteps.map((step, index) => (
+                           <StepCard key={step.title} icon={step.icon} title={step.title} description={step.description} isLast={index === talentSteps.length - 1} color="blue" />
+                       ))}
+                    </ul>
+                </div>
+                <div>
+                    <h3 className="text-3xl font-bold mb-8 text-center text-green-300">For Managers</h3>
+                     <ul className="space-y-4">
+                        {managerSteps.map((step, index) => (
+                           <StepCard key={step.title} icon={step.icon} title={step.title} description={step.description} isLast={index === managerSteps.length - 1} color="green" />
+                       ))}
+                     </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+);
+
+const Footer: React.FC = () => (
+  <footer className="bg-gray-950 border-t border-gray-800">
+    <div className="container mx-auto px-4 md:px-6 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="col-span-1 md:col-span-2">
+                <Link href="/" className="flex items-center gap-2">
+                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-blue-400">
+                        <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+                        <path d="M2 7L12 12" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+                        <path d="M12 22V12" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+                        <path d="M22 7L12 12" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+                        <path d="M17 4.5L7 9.5" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+                    </svg>
+                    <h3 className="font-bold text-xl text-white">Salone Skills Connect</h3>
+                </Link>
+                <p className="mt-4 text-sm text-gray-400 max-w-sm">Building a trusted skills economy for Sierra Leone's youth by verifying talent and creating opportunities.</p>
+            </div>
+        </div>
+        <div className="mt-12 border-t border-gray-800 pt-8 text-center text-sm text-gray-500">
+            <p>TRON: Aaron Peter Coker © 2025 - Professionally Redesigned</p>
+        </div>
+    </div>
+  </footer>
+);
+
+
+// --- Main App Page Component for Next.js ---
+export default function LandingPage() {
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  // Effect to show/hide the scroll-to-top button
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // --- Scroll Functions ---
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  
+  const scrollToSection = (event: React.MouseEvent, id: string) => {
+    if (id.startsWith('#')) {
+      event.preventDefault();
+      const sectionId = id.substring(1);
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
+  return (
+    <div className="flex flex-col min-h-screen bg-gray-950 text-gray-200 font-sans antialiased overflow-x-hidden">
+      <Header scrollToSection={scrollToSection} />
+      <main className="flex-grow">
+        <Hero scrollToSection={(id) => scrollToSection({ preventDefault: () => {} } as React.MouseEvent, `#${id}`)} />
+        <ProblemSolution />
+        <FeaturedSkills />
+        <HowItWorks />
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      <Footer />
+
+      {showScrollTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 bg-blue-600 hover:bg-blue-500 text-white p-4 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 z-50"
+          aria-label="Scroll to top"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <FaArrowUp className="h-5 w-5" />
+        </button>
+      )}
     </div>
   );
 }
