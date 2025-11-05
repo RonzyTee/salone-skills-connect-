@@ -2,7 +2,15 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // 1. Specify which routes are protected and which are public-only
-const protectedRoutes = ['/dashboard', '/onboarding', '/settings', '/portfolio', '/profile', '/choose-role'];
+const protectedRoutes = [
+  '/dashboard', 
+  '/onboarding', 
+  '/settings', 
+  '/portfolio', 
+  '/profile', 
+  '/choose-role',
+  '/admin' // <-- *** ADD THIS LINE ***
+];
 const publicAuthRoutes = ['/signin', '/signup'];
 
 export function middleware(req: NextRequest) {
@@ -35,3 +43,4 @@ export const config = {
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };
+

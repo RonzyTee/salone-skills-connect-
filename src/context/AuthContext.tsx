@@ -8,7 +8,11 @@ import React, {
   ReactNode,
   useCallback,
 } from 'react';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import {
+  onAuthStateChanged,
+  User,
+  signOut,
+} from 'firebase/auth';
 import {
   doc,
   onSnapshot,
@@ -16,7 +20,7 @@ import {
   getDoc,
   serverTimestamp,
   Timestamp,
-  updateDoc, // <-- IMPORT updateDoc FOR PRESENCE
+  updateDoc,
 } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { UserProfile } from '@/types';
@@ -29,6 +33,7 @@ interface AuthContextType {
   userProfile: UserProfile | null;
   loading: boolean;
   refreshUserProfile: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,7 +44,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Start as true to check auth status initially
 
   // Effect for handling Authentication State and User Profile fetching
   useEffect(() => {
@@ -50,6 +55,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (currentUser) {
         // User is LOGGED IN
+        // When a user logs in or is already logged in, we set loading to true
+        // until their profile is fetched.
         setLoading(true);
         setUser(currentUser);
 
@@ -66,7 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 uid: currentUser.uid,
                 email: currentUser.email || '',
                 fullName: currentUser.displayName || 'New User',
-                userType: 'youth',
+                userType: 'youth', // Default userType
                 oivpStatus: { tier0: 'unverified' },
                 projectsCount: 0,
                 endorsementsCount: 0,
@@ -74,6 +81,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 following: [],
                 selectedSkills: [],
                 createdAt: serverTimestamp() as Timestamp,
+                isOnline: true,
+                lastSeen: serverTimestamp() as Timestamp,
               };
               try {
                 await setDoc(userDocRef, newUserProfileData, { merge: true });
@@ -83,19 +92,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 setUserProfile(null);
               }
             }
-            setLoading(false);
+            setLoading(false); // Profile fetched/created, stop loading
           },
           (error) => {
             console.error('Error listening to user profile:', error);
             setUserProfile(null);
-            setLoading(false);
+            setLoading(false); // Stop loading even if there's an error
           }
         );
       } else {
         // User is LOGGED OUT
         setUser(null);
         setUserProfile(null);
-        setLoading(false);
+        setLoading(false); // Auth state determined as logged out, stop loading
       }
     });
 
@@ -105,20 +114,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  // --- [THE FIX IS HERE] ---
   // Centralized Presence Management Hook
   useEffect(() => {
-    // Only run this logic if a user is logged in.
     if (!user?.uid) {
+      // Don't run presence logic if no user is logged in
       return;
     }
 
     const userStatusRef = doc(db, 'users', user.uid);
 
-    // Set online immediately when the user is authenticated.
-    updateDoc(userStatusRef, { isOnline: true });
+    // Set online status when component mounts (user logs in or refreshes page)
+    updateDoc(userStatusRef, { isOnline: true, lastSeen: serverTimestamp() });
 
-    // Function to handle when the user's tab is not visible.
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         updateDoc(userStatusRef, {
@@ -130,32 +137,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     };
 
-    // Function to handle when the user closes the tab/browser.
     const handleBeforeUnload = () => {
+      // Use navigator.sendBeacon for more reliable updates on page unload
+      // This is an advanced technique, a simple updateDoc might still be prone to race conditions
+      // but is generally "good enough" for many cases.
+      // For more robust presence, consider Firebase Realtime Database and custom cloud functions.
       updateDoc(userStatusRef, {
         isOnline: false,
         lastSeen: serverTimestamp(),
       });
     };
 
-    // Add event listeners for browser events.
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
 
-    // This cleanup function runs when the user logs out.
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
 
-      // Set offline one last time when the component unmounts or user logs out.
+      // Attempt to set offline one last time when component unmounts (e.g., user logs out)
+      // This might not always fire reliably depending on browser behavior.
       updateDoc(userStatusRef, {
         isOnline: false,
         lastSeen: serverTimestamp(),
       });
     };
-  }, [user?.uid]); // The dependency on `user.uid` is crucial for this to work correctly.
-  // --- [END OF FIX] ---
+  }, [user?.uid]); // Re-run effect if user UID changes
 
+  // Function to manually refresh profile data
   const refreshUserProfile = useCallback(async () => {
     if (!user) return;
     try {
@@ -171,13 +180,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
-  const value = { user, userProfile, loading, refreshUserProfile };
+  // Logout function
+  const logout = async () => {
+    setLoading(true); // <--- IMPORTANT CHANGE: Immediately set loading to true
+    try {
+      // Optional: Set user offline in Firestore *before* signing out
+      // This part ensures a more immediate offline status if the user closes the tab immediately after logging out.
+      if (user) {
+        const userStatusRef = doc(db, 'users', user.uid);
+        await updateDoc(userStatusRef, {
+          isOnline: false,
+          lastSeen: serverTimestamp(),
+        });
+      }
+      await signOut(auth); // This triggers the onAuthStateChanged listener
+      // The onAuthStateChanged listener will then detect the null user,
+      // update user/userProfile to null, and finally set setLoading(false).
+    } catch (error) {
+      console.error('Error signing out: ', error);
+      setLoading(false); // <--- IMPORTANT CHANGE: Ensure loading is set to false even if signOut fails
+    }
+  };
+
+  const value = {
+    user,
+    userProfile,
+    loading,
+    refreshUserProfile,
+    logout,
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 // =========================================================
-// 3. Custom Hook
+// 3. Custom Hook to consume AuthContext
 // =========================================================
 export const useAuth = () => {
   const context = useContext(AuthContext);

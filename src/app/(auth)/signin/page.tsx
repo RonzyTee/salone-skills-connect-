@@ -75,23 +75,31 @@ export default function SignInPage() {
         }
     };
 
+    // --- UPDATED createSession FUNCTION ---
     const createSession = async (user: User) => {
         try {
             const idToken = await user.getIdToken();
-            await fetch('/api/auth/session', {
+            const response = await fetch('/api/auth/session', { // Save response
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ idToken }),
             });
+
+            if (!response.ok) { // Check if response is successful
+              throw new Error('API request failed to create session.');
+            }
+
+            return await response.json(); // Return the JSON data
         } catch (error) {
             console.error("Failed to create session:", error);
             if (isMounted.current) {
                 setFirebaseError("Could not sign you in. Please try again.");
             }
-            throw error;
+            throw error; // Re-throw the error to stop the login process
         }
     };
 
+    // --- UPDATED onSubmit FUNCTION ---
     const onSubmit = async (values: SignInFormValues) => {
         if (isMounted.current) {
             setFirebaseError(null);
@@ -99,8 +107,16 @@ export default function SignInPage() {
         }
         try {
             const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
-            await createSession(userCredential.user);
-            router.push('/dashboard');
+            
+            // 1. Get the response data (which includes userType)
+            const data = await createSession(userCredential.user);
+
+            // 2. Redirect based on userType
+            if (data.userType === 'admin') {
+              router.push('/admin/dashboard');
+            } else {
+              router.push('/dashboard');
+            }
         } catch (error: any) {
             if (isMounted.current) {
                 setFirebaseError(getFirebaseErrorMessage(error));
@@ -109,6 +125,7 @@ export default function SignInPage() {
         }
     };
 
+    // --- UPDATED handleSocialSignIn FUNCTION ---
     const handleSocialSignIn = async (provider: 'google' | 'github') => {
         if (isMounted.current) {
             setFirebaseError(null);
@@ -117,8 +134,16 @@ export default function SignInPage() {
         const authProvider = provider === 'google' ? new GoogleAuthProvider() : new GithubAuthProvider();
         try {
             const result = await signInWithPopup(auth, authProvider);
-            await createSession(result.user);
-            router.push('/dashboard');
+            
+            // 1. Get the response data (which includes userType)
+            const data = await createSession(result.user);
+
+            // 2. Redirect based on userType
+            if (data.userType === 'admin') {
+              router.push('/admin/dashboard');
+            } else {
+              router.push('/dashboard');
+            }
         } catch (error: any) {
             if (isMounted.current) {
                 setFirebaseError(getFirebaseErrorMessage(error));
@@ -237,3 +262,4 @@ export default function SignInPage() {
         </div>
     );
 }
+

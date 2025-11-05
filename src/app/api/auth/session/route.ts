@@ -1,4 +1,3 @@
-// /api/auth/session/route.ts
 import { NextResponse } from 'next/server';
 import * as admin from 'firebase-admin';
 import { cookies } from 'next/headers'; // Import cookies
@@ -20,7 +19,13 @@ if (!admin.apps.length) {
   }
 }
 
-// --- Your POST Function (Unchanged) ---
+// --- ADD THIS ---
+// Get the Firestore instance *after* initialization
+const adminDb = admin.firestore();
+// --- END ADD ---
+
+
+// --- UPDATED POST Function ---
 export async function POST(request: Request) {
   try {
     const { idToken } = await request.json();
@@ -38,6 +43,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'ID token has been revoked.' }, { status: 401 });
     }
 
+    // --- START OF NEW LOGIC ---
+    // 1. Get the user's UID from the token
+    const uid = decodedToken.uid;
+
+    // 2. Fetch the user's document from Firestore
+    const userRef = adminDb.collection('users').doc(uid);
+    const userSnap = await userRef.get();
+
+    if (!userSnap.exists) {
+      console.warn(`User data not found for UID: ${uid} during login.`);
+    }
+
+    // 3. Get the userType, default to 'youth' if not set
+    const userType = userSnap.data()?.userType || 'youth';
+    // --- END OF NEW LOGIC ---
+
     const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
     const sessionCookie = await admin.auth().createSessionCookie(idToken, { expiresIn });
     
@@ -51,7 +72,8 @@ export async function POST(request: Request) {
       sameSite: 'lax' as const,
     };
 
-    const response = NextResponse.json({ status: 'success' }, { status: 200 });
+    // 4. RETURN THE userType IN THE RESPONSE
+    const response = NextResponse.json({ status: 'success', userType: userType }, { status: 200 });
     response.cookies.set(cookieOptions);
     return response;
 
@@ -63,7 +85,7 @@ export async function POST(request: Request) {
 
 // --- UPDATED DELETE Function ---
 export async function DELETE() {
-  const sessionCookie = cookies().get('__session')?.value || '';
+  const sessionCookie = (await cookies()).get('__session')?.value || '';
 
   // 1. Create a response to clear the cookie
   const response = NextResponse.json({ status: 'success' }, { status: 200 });
@@ -93,3 +115,4 @@ export async function DELETE() {
   // 3. Return the response that clears the cookie
   return response;
 }
+

@@ -7,7 +7,8 @@ import {
   FaArrowUp, FaCog, FaSearch, FaImages, FaTrophy, FaNewspaper, FaQuestionCircle,
   FaBriefcase, FaChevronDown, FaTimesCircle, FaCheckCircle,
   FaPaintBrush, FaCode, FaCamera, FaWrench, FaCut, FaBirthdayCake,
-  FaUserCheck, FaFolderOpen, FaAward, FaSearchLocation, FaFilter, FaHandshake
+  FaUserCheck, FaFolderOpen, FaAward, FaSearchLocation, FaFilter, FaHandshake,
+  FaQuoteLeft, FaPlus, FaMinus, FaSignInAlt, FaUserPlus, FaIdBadge, FaCertificate, FaStar, FaMapMarkerAlt
 } from 'react-icons/fa';
 
 // --- CONFIGURATION / CONSTANTS ---
@@ -53,6 +54,56 @@ const managerSteps = [
     { icon: <FaHandshake />, title: "Hire with Confidence", description: "Review verified portfolios and testimonials to make informed, risk-free hiring decisions." },
 ];
 
+// Data for Interactive Product Demo
+const TALENT_DATA = [
+  { name: 'Isata Kallon', skill: 'Web Developer', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=256&auto=format&fit=crop', location: 'Freetown', oivpTier: 2 },
+  { name: 'Musa Bangura', skill: 'Graphic Designer', avatar: 'https://images.unsplash.com/photo-1610216705422-caa3fc269d95?q=80&w=256&auto=format&fit=crop', location: 'Bo', oivpTier: 1 },
+  { name: 'Fatmata Koroma', skill: 'Photographer', avatar: 'https://images.unsplash.com/photo-1592755219439-559d1a3a4c38?q=80&w=256&auto=format&fit=crop', location: 'Freetown', oivpTier: 2 },
+  { name: 'David Williams', skill: 'Mechanic', avatar: 'https://images.unsplash.com/photo-1568602471322-7826e3a4e894?q=80&w=256&auto=format&fit=crop', location: 'Kenema', oivpTier: 0 },
+  { name: 'Zainab Turay', skill: 'Tailor', avatar: 'https://images.unsplash.com/photo-1558239088-580a145d4755?q=80&w=256&auto=format&fit=crop', location: 'Makeni', oivpTier: 1 },
+  { name: 'Samuel Johnson', skill: 'Web Developer', avatar: 'https://images.unsplash.com/photo-1629683239923-38a4ea51143a?q=80&w=256&auto=format&fit=crop', location: 'Freetown', oivpTier: 1 },
+];
+
+const TESTIMONIALS_DATA = [
+  {
+    quote: "Finding a verified web developer was impossible before this. Salone Skills Connect made it simple and secure. We hired a fantastic developer in days.",
+    name: "Foday Kamara",
+    title: "Project Manager, TechVibe SL",
+    avatar: "https://images.unsplash.com/photo-1537511446984-935f663eb1f4?q=80&w=256&auto=format&fit=crop"
+  },
+  {
+    quote: "As a photographer, proving my skills was hard. The OIVP system gave me a verified portfolio that landed me three major contracts. It's a game-changer.",
+    name: "Aminata Sesay",
+    title: "Freelance Photographer",
+    avatar: "https://images.unsplash.com/photo-1534751516642-a1af1ef26a56?q=80&w=256&auto=format&fit=crop"
+  },
+  {
+    quote: "The 'Client Endorsed' badge is pure gold. It immediately separates the serious professionals from the rest. Our hiring process is now 90% faster.",
+    name: "John Davies",
+    title: "HR Director, Creative Solutions",
+    avatar: "https://images.unsplash.com/photo-1566753323558-f4e0952af115?q=80&w=256&auto=format&fit=crop"
+  }
+];
+
+const FAQ_DATA = [
+  {
+    question: "What is the Open Innovation Verification Protocol (OIVP)?",
+    answer: "The OIVP is our unique 3-tier system designed to build trust. Tier 0 verifies identity with a National ID. Tier 1 verifies work through portfolios or proof of skill. Tier 2 confirms credibility with client endorsements and testimonials."
+  },
+  {
+    question: "Is this platform only for tech skills?",
+    answer: "Not at all! We welcome all skilled youth, from digital professionals like coders and designers to vocational experts like mechanics, tailors, photographers, and bakers. Our mission is to empower the entire spectrum of Sierra Leone's talent."
+  },
+  {
+    question: "How do I get the 'Client Endorsed' badge?",
+    answer: "After completing a job for a client you connected with (on or off the platform), you can request a testimonial. Once the client submits a positive review confirming the successful completion of work, you earn the Tier 2 'Client Endorsed' badge, the highest level of trust."
+  },
+  {
+    question: "Are there any fees for talent to join?",
+    answer: "Joining Salone Skills Connect, creating a profile, and completing the verification process is completely free for skilled individuals. Our goal is to remove barriers to opportunity, not create them."
+  }
+];
+
 
 // --- IN-PAGE COMPONENTS ---
 
@@ -89,9 +140,13 @@ const Header: React.FC<{ scrollToSection: (e: React.MouseEvent, id: string) => v
           </nav>
         </div>
         <div className="flex items-center gap-4">
-           <Link href="/signup" className="flex items-center text-sm font-medium text-gray-300 hover:text-blue-400 transition-colors">
-             <FaQuestionCircle className="mr-2" />
-             Support
+           <Link href="/signin" className="flex items-center text-sm font-medium text-gray-300 hover:text-blue-400 transition-colors">
+             <FaSignInAlt className="mr-2" />
+             Sign In
+           </Link>
+           <Link href="/signup" className="flex items-center justify-center text-sm font-bold text-white bg-blue-600 rounded-md px-4 py-2 transition-all duration-300 ease-in-out hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/30">
+             <FaUserPlus className="mr-2" />
+             Sign Up
            </Link>
         </div>
       </div>
@@ -210,7 +265,6 @@ const FeaturedSkills: React.FC = () => (
     </section>
 );
 
-// FIX: Define StepCard as a React.FC to correctly handle props like 'key', resolving the TypeScript error.
 const StepCard: React.FC<{ icon: React.ReactElement<any>, title: string, description: string, isLast: boolean, color: 'blue' | 'green' }> = ({ icon, title, description, isLast, color }) => (
     <li className="relative flex items-start gap-6 pb-10">
         {!isLast && <div className={`absolute left-5 top-5 h-full w-0.5 bg-gradient-to-b from-${color}-500/50 via-${color}-500/50 to-transparent`} />}
@@ -254,6 +308,187 @@ const HowItWorks: React.FC = () => (
             </div>
         </div>
     </section>
+);
+
+const OIVPBadge: React.FC<{ tier: number }> = ({ tier }) => {
+  const badges = [
+    { icon: <FaIdBadge />, text: 'Identity Verified', color: 'text-gray-400', level: 'OIVP Tier 0' },
+    { icon: <FaCertificate />, text: 'Work Verified', color: 'text-blue-400', level: 'OIVP Tier 1' },
+    { icon: <FaStar />, text: 'Client Endorsed', color: 'text-yellow-400', level: 'OIVP Tier 2' },
+  ];
+
+  if (tier < 0 || tier >= badges.length) return null;
+
+  const badge = badges[tier];
+
+  return (
+    <div className={`flex items-center gap-2 text-sm ${badge.color}`} title={badge.level}>
+        {React.cloneElement(badge.icon, { className: 'w-4 h-4' })}
+        <span className="font-semibold">{badge.text}</span>
+    </div>
+  );
+};
+
+
+const ProductDemo: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredTalent, setFilteredTalent] = useState(TALENT_DATA);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (searchTerm.trim() === '') {
+        setFilteredTalent(TALENT_DATA);
+      } else {
+        const lowercasedFilter = searchTerm.toLowerCase();
+        const filtered = TALENT_DATA.filter(talent =>
+          talent.name.toLowerCase().includes(lowercasedFilter) ||
+          talent.skill.toLowerCase().includes(lowercasedFilter)
+        );
+        setFilteredTalent(filtered);
+      }
+    }, 300); // Debounce search
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  return (
+    <section id="demo" className="py-24 bg-gray-950/70">
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="text-center">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-blue-400">Interactive Demo</h2>
+          <p className="mt-3 text-4xl md:text-5xl font-extrabold tracking-tight text-white">See Our Talent in Action</p>
+          <p className="mt-6 max-w-3xl mx-auto text-lg text-gray-400">
+            Get a feel for our platform. Use the search bar to filter talent by name or skill and see how our OIVP trust system works.
+          </p>
+        </div>
+        <div className="mt-12 max-w-2xl mx-auto">
+          <div className="relative">
+            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+            <input
+              type="text"
+              placeholder="Search for 'Web Developer', 'Photographer'..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            />
+          </div>
+        </div>
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filteredTalent.map((talent) => (
+            <div key={talent.name} className="bg-gray-900 border border-gray-800 rounded-xl p-6 flex flex-col items-center text-center transition-all duration-300 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2">
+              <img src={talent.avatar} alt={talent.name} className="w-24 h-24 rounded-full mb-4 border-4 border-gray-700 object-cover" />
+              <h3 className="text-xl font-bold text-white">{talent.name}</h3>
+              <p className="text-blue-300 font-medium">{talent.skill}</p>
+              <p className="flex items-center gap-2 text-gray-400 text-sm mt-1">
+                <FaMapMarkerAlt className="w-3 h-3"/> {talent.location}
+              </p>
+              <div className="mt-4 pt-4 border-t border-gray-800 w-full flex justify-center">
+                <OIVPBadge tier={talent.oivpTier} />
+              </div>
+            </div>
+          ))}
+           {filteredTalent.length === 0 && (
+             <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center py-12">
+                <p className="text-gray-400 text-lg">No talent found matching your search.</p>
+             </div>
+           )}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+
+const Testimonials: React.FC = () => (
+    <section id="testimonials" className="py-24 bg-gray-950/70">
+        <div className="container mx-auto px-4 md:px-6">
+            <div className="text-center">
+                <h2 className="text-sm font-bold uppercase tracking-widest text-blue-400">Social Proof</h2>
+                <p className="mt-3 text-4xl md:text-5xl font-extrabold tracking-tight text-white">Trusted by Leaders</p>
+                <p className="mt-6 max-w-3xl mx-auto text-lg text-gray-400">
+                    Hear from managers and talent who have successfully used our platform to build their teams and careers.
+                </p>
+            </div>
+            <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+                {TESTIMONIALS_DATA.map((testimonial, index) => (
+                    <div key={index} className="bg-gray-900 p-8 rounded-xl border border-gray-800 flex flex-col transition-all duration-300 hover:-translate-y-2 hover:border-blue-500/50">
+                        <FaQuoteLeft className="w-8 h-8 text-blue-400 mb-4" />
+                        <p className="text-gray-300 flex-grow">{testimonial.quote}</p>
+                        <div className="flex items-center mt-6 pt-6 border-t border-gray-800">
+                            <img src={testimonial.avatar} alt={testimonial.name} className="w-12 h-12 rounded-full mr-4 object-cover" />
+                            <div>
+                                <p className="font-bold text-white">{testimonial.name}</p>
+                                <p className="text-sm text-gray-400">{testimonial.title}</p>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    </section>
+);
+
+const FAQItem: React.FC<{ q: string; a: string; }> = ({ q, a }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+        <div className="border-b border-gray-800">
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex justify-between items-center w-full py-5 text-left"
+                aria-expanded={isOpen}
+            >
+                <span className="text-lg font-medium text-white">{q}</span>
+                {isOpen ? <FaMinus className="w-5 h-5 text-blue-400" /> : <FaPlus className="w-5 h-5 text-gray-400" />}
+            </button>
+            <div className={`grid overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                <div className="overflow-hidden">
+                    <p className="pb-5 pr-10 text-gray-400">{a}</p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const FAQ: React.FC = () => (
+    <section id="faq" className="py-24 bg-gray-950">
+        <div className="container mx-auto px-4 md:px-6">
+            <div className="text-center">
+                <h2 className="text-sm font-bold uppercase tracking-widest text-blue-400">Have Questions?</h2>
+                <p className="mt-3 text-4xl md:text-5xl font-extrabold tracking-tight text-white">We Have Answers</p>
+                <p className="mt-6 max-w-3xl mx-auto text-lg text-gray-400">
+                    Find answers to the most common questions about our platform, verification process, and how to get started.
+                </p>
+            </div>
+            <div className="mt-16 max-w-3xl mx-auto">
+                {FAQ_DATA.map((item, index) => (
+                    <FAQItem key={index} q={item.question} a={item.answer} />
+                ))}
+            </div>
+        </div>
+    </section>
+);
+
+const CallToAction: React.FC = () => (
+  <section id="cta" className="py-24 bg-gray-950/70">
+    <div className="container mx-auto px-4 md:px-6">
+      <div className="bg-gradient-to-r from-blue-600 to-green-600 rounded-xl p-12 text-center relative overflow-hidden">
+         <div className="absolute inset-0 bg-black/20 mix-blend-multiply"></div>
+         <div className="relative z-10">
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-white">Ready to Join?</h2>
+            <p className="mt-4 max-w-2xl mx-auto text-lg text-blue-100">
+                Whether you're looking for verified talent or seeking your next big opportunity, your journey starts here. Create your account and unlock your potential today.
+            </p>
+            <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+                <Link href="/signup" className="group relative inline-flex items-center justify-center px-8 py-3 text-lg font-bold text-blue-600 bg-white rounded-lg overflow-hidden transition-all duration-300 ease-in-out hover:bg-gray-200 w-full sm:w-auto h-14 hover:-translate-y-1 hover:shadow-xl">
+                    <FaSearch className="mr-3 h-5 w-5" /> Find Talent Now
+                </Link>
+                <Link href="/signup" className="group relative inline-flex items-center justify-center px-8 py-3 text-lg font-bold text-white bg-gray-900/50 rounded-lg overflow-hidden transition-all duration-300 ease-in-out hover:bg-gray-900/80 w-full sm:w-auto h-14 hover:-translate-y-1 hover:shadow-xl">
+                    <FaBriefcase className="mr-3 h-5 w-5" /> Start Earning
+                </Link>
+            </div>
+        </div>
+      </div>
+    </div>
+  </section>
 );
 
 const Footer: React.FC = () => (
@@ -319,6 +554,10 @@ export default function LandingPage() {
         <ProblemSolution />
         <FeaturedSkills />
         <HowItWorks />
+        <ProductDemo />
+        <Testimonials />
+        <FAQ />
+        <CallToAction />
       </main>
       <Footer />
 
